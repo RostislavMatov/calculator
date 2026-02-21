@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Инвестиционный калькулятор</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -24,16 +25,17 @@
       letter-spacing: -0.5px;
     }
 
-    .container {
-      max-width: 960px;
+    .layout {
+      max-width: 1040px;
       margin: 0 auto;
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 320px 1fr;
       gap: 24px;
+      align-items: start;
     }
 
-    @media (max-width: 680px) {
-      .container { grid-template-columns: 1fr; }
+    @media (max-width: 780px) {
+      .layout { grid-template-columns: 1fr; }
     }
 
     .card {
@@ -44,21 +46,20 @@
     }
 
     .card h2 {
-      font-size: 1rem;
+      font-size: 0.8rem;
       font-weight: 600;
-      color: #94a3b8;
+      color: #64748b;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
       margin-bottom: 20px;
     }
 
-    .field {
-      margin-bottom: 16px;
-    }
+    /* ---- Inputs ---- */
+    .field { margin-bottom: 18px; }
 
     label {
       display: block;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       color: #94a3b8;
       margin-bottom: 6px;
     }
@@ -76,14 +77,12 @@
       appearance: none;
     }
 
-    input[type="number"]:focus, select:focus {
-      border-color: #6366f1;
-    }
+    input[type="number"]:focus, select:focus { border-color: #6366f1; }
 
     input[type="range"] {
       width: 100%;
       accent-color: #6366f1;
-      margin-top: 4px;
+      margin-top: 6px;
     }
 
     .range-row {
@@ -93,33 +92,20 @@
     }
 
     .range-row input[type="number"] {
-      width: 90px;
+      width: 84px;
       flex-shrink: 0;
+      padding: 8px 10px;
+      font-size: 0.95rem;
     }
 
-    button {
-      width: 100%;
-      padding: 12px;
-      background: #6366f1;
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 8px;
-      transition: background 0.15s, transform 0.1s;
-    }
+    /* ---- Right column ---- */
+    .right { display: flex; flex-direction: column; gap: 20px; }
 
-    button:hover { background: #4f46e5; }
-    button:active { transform: scale(0.98); }
-
-    /* Results */
-    .results-grid {
+    /* ---- Stats ---- */
+    .stats-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
-      margin-bottom: 20px;
     }
 
     .stat {
@@ -130,52 +116,53 @@
     }
 
     .stat .label {
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       color: #64748b;
-      margin-bottom: 4px;
+      margin-bottom: 5px;
     }
 
     .stat .value {
-      font-size: 1.25rem;
+      font-size: 1.2rem;
       font-weight: 700;
       color: #f1f5f9;
     }
 
-    .stat .value.green { color: #34d399; }
-    .stat .value.blue  { color: #60a5fa; }
-    .stat .value.purple{ color: #a78bfa; }
+    .stat .value.green  { color: #34d399; }
+    .stat .value.blue   { color: #60a5fa; }
+    .stat .value.purple { color: #a78bfa; }
 
-    /* Progress bar */
-    .bar-wrap {
-      background: #0f172a;
+    /* ---- Progress bar ---- */
+    .bar-section { margin-top: 4px; }
+
+    .bar-label {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-bottom: 6px;
+    }
+
+    .bar-track {
+      display: flex;
+      height: 12px;
       border-radius: 6px;
-      height: 10px;
       overflow: hidden;
-      margin-top: 4px;
+      background: #0f172a;
     }
 
-    .bar-fill {
-      height: 100%;
-      border-radius: 6px;
-      transition: width 0.4s ease;
-    }
-
-    .bar-contributions { background: #60a5fa; }
-    .bar-interest      { background: #34d399; }
+    .bar-c { background: #60a5fa; height: 100%; transition: width 0.4s ease; }
+    .bar-i { background: #34d399; height: 100%; transition: width 0.4s ease; }
 
     .legend {
       display: flex;
       gap: 16px;
       margin-top: 8px;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: #94a3b8;
     }
 
     .legend span::before {
       content: '';
       display: inline-block;
-      width: 10px;
-      height: 10px;
+      width: 9px; height: 9px;
       border-radius: 2px;
       margin-right: 5px;
       vertical-align: middle;
@@ -184,16 +171,42 @@
     .legend .c::before { background: #60a5fa; }
     .legend .i::before { background: #34d399; }
 
-    /* Table */
-    .table-wrap {
-      grid-column: 1 / -1;
+    /* ---- Chart ---- */
+    .chart-wrap {
+      position: relative;
+      height: 260px;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.875rem;
+    /* ---- Tabs ---- */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 16px;
     }
+
+    .tab {
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: transparent;
+      color: #64748b;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+    }
+
+    .tab.active {
+      background: #334155;
+      color: #f1f5f9;
+      border-color: #475569;
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ---- Table ---- */
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
 
     thead th {
       text-align: left;
@@ -204,32 +217,26 @@
     }
 
     tbody tr { border-bottom: 1px solid #1e293b; }
-    tbody tr:hover { background: #1e293b; }
+    tbody tr:hover { background: #1e293b55; }
 
-    tbody td {
-      padding: 8px 12px;
-      color: #cbd5e1;
-    }
-
+    tbody td { padding: 8px 12px; color: #cbd5e1; }
     tbody td:first-child { color: #94a3b8; }
     tbody td.green { color: #34d399; }
     tbody td.blue  { color: #60a5fa; }
 
-    .empty-msg {
-      text-align: center;
-      color: #475569;
-      padding: 32px;
-      font-size: 0.95rem;
-    }
+    .table-scroll { max-height: 280px; overflow-y: auto; }
+    .table-scroll::-webkit-scrollbar { width: 6px; }
+    .table-scroll::-webkit-scrollbar-track { background: #0f172a; border-radius: 3px; }
+    .table-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
   </style>
 </head>
 <body>
 
 <h1>Инвестиционный калькулятор</h1>
 
-<div class="container">
+<div class="layout">
 
-  <!-- INPUTS -->
+  <!-- LEFT: Inputs -->
   <div class="card">
     <h2>Параметры</h2>
 
@@ -246,16 +253,16 @@
     <div class="field">
       <label>Годовая доходность (%)</label>
       <div class="range-row">
-        <input type="range" id="rateRange" min="0" max="50" step="0.5" value="12" oninput="syncRate(this)" />
-        <input type="number" id="rate" value="12" min="0" max="200" step="0.5" oninput="syncRateInput(this)" />
+        <input type="range" id="rateRange" min="0" max="50" step="0.5" value="12" />
+        <input type="number" id="rate" value="12" min="0" max="200" step="0.5" />
       </div>
     </div>
 
     <div class="field">
       <label>Срок инвестирования (лет)</label>
       <div class="range-row">
-        <input type="range" id="yearsRange" min="1" max="50" step="1" value="10" oninput="syncYears(this)" />
-        <input type="number" id="years" value="10" min="1" max="100" step="1" oninput="syncYearsInput(this)" />
+        <input type="range" id="yearsRange" min="1" max="50" step="1" value="10" />
+        <input type="number" id="years" value="10" min="1" max="100" step="1" />
       </div>
     </div>
 
@@ -268,64 +275,192 @@
         <option value="1">Ежегодно</option>
       </select>
     </div>
-
-    <button onclick="calculate()">Рассчитать</button>
   </div>
 
-  <!-- RESULTS -->
-  <div class="card" id="resultsCard">
-    <h2>Результат</h2>
-    <div id="resultsContent">
-      <p class="empty-msg">Заполните параметры и нажмите «Рассчитать»</p>
+  <!-- RIGHT: Results -->
+  <div class="right">
+
+    <!-- Stats card -->
+    <div class="card">
+      <h2>Итог</h2>
+      <div class="stats-grid">
+        <div class="stat">
+          <div class="label">Итоговый капитал</div>
+          <div class="value purple" id="sFinal">—</div>
+        </div>
+        <div class="stat">
+          <div class="label">Всего внесено</div>
+          <div class="value blue" id="sContrib">—</div>
+        </div>
+        <div class="stat">
+          <div class="label">Доход от инвестиций</div>
+          <div class="value green" id="sIncome">—</div>
+        </div>
+        <div class="stat">
+          <div class="label">Доходность на вложения</div>
+          <div class="value green" id="sPct">—</div>
+        </div>
+      </div>
+      <div class="bar-section" style="margin-top:16px">
+        <div class="bar-label">Структура капитала</div>
+        <div class="bar-track">
+          <div class="bar-c" id="barC" style="width:50%"></div>
+          <div class="bar-i" id="barI" style="width:50%"></div>
+        </div>
+        <div class="legend">
+          <span class="c" id="legC">Взносы</span>
+          <span class="i" id="legI">Доход</span>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <!-- TABLE -->
-  <div class="card table-wrap" id="tableCard" style="display:none">
-    <h2>По годам</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Год</th>
-          <th>Взносы</th>
-          <th>Доход</th>
-          <th>Итог</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody"></tbody>
-    </table>
-  </div>
+    <!-- Chart + Table card -->
+    <div class="card">
+      <div class="tabs">
+        <button class="tab active" data-tab="chart">График</button>
+        <button class="tab" data-tab="table">По годам</button>
+      </div>
 
+      <div class="tab-panel active" id="tab-chart">
+        <div class="chart-wrap">
+          <canvas id="growthChart"></canvas>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="tab-table">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Год</th>
+                <th>Взносы</th>
+                <th>Доход</th>
+                <th>Итог</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <script>
+  /* ---- Formatting ---- */
   function fmt(n) {
+    if (n >= 1_000_000) return (n / 1_000_000).toLocaleString('ru-RU', { maximumFractionDigits: 2 }) + ' млн ₽';
+    return n.toLocaleString('ru-RU', { maximumFractionDigits: 0 }) + ' ₽';
+  }
+  function fmtFull(n) {
     return n.toLocaleString('ru-RU', { maximumFractionDigits: 0 }) + ' ₽';
   }
 
-  function syncRate(el)      { document.getElementById('rate').value = el.value; }
-  function syncRateInput(el) { document.getElementById('rateRange').value = Math.min(el.value, 50); }
-  function syncYears(el)      { document.getElementById('years').value = el.value; }
-  function syncYearsInput(el) { document.getElementById('yearsRange').value = Math.min(el.value, 50); }
+  /* ---- Sync range/number pairs ---- */
+  function bindPair(rangeId, numberId) {
+    const range = document.getElementById(rangeId);
+    const num   = document.getElementById(numberId);
+    range.addEventListener('input', () => { num.value = range.value; calculate(); });
+    num.addEventListener('input', () => {
+      range.value = Math.min(parseFloat(num.value) || 0, parseFloat(range.max));
+      calculate();
+    });
+  }
 
+  bindPair('rateRange', 'rate');
+  bindPair('yearsRange', 'years');
+  document.getElementById('initial').addEventListener('input', calculate);
+  document.getElementById('monthly').addEventListener('input', calculate);
+  document.getElementById('freq').addEventListener('change', calculate);
+
+  /* ---- Chart ---- */
+  const ctx = document.getElementById('growthChart').getContext('2d');
+  const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: 'Взносы',
+          data: [],
+          backgroundColor: '#3b82f6aa',
+          borderColor: '#60a5fa',
+          borderWidth: 1,
+          borderRadius: 3,
+        },
+        {
+          label: 'Доход',
+          data: [],
+          backgroundColor: '#10b98199',
+          borderColor: '#34d399',
+          borderWidth: 1,
+          borderRadius: 3,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 300 },
+      interaction: { mode: 'index' },
+      plugins: {
+        legend: {
+          labels: { color: '#94a3b8', font: { size: 12 }, boxWidth: 12, padding: 16 },
+        },
+        tooltip: {
+          backgroundColor: '#1e293b',
+          borderColor: '#334155',
+          borderWidth: 1,
+          titleColor: '#f1f5f9',
+          bodyColor: '#94a3b8',
+          callbacks: {
+            label(ctx) {
+              return ` ${ctx.dataset.label}: ${fmtFull(ctx.parsed.y)}`;
+            },
+            afterBody(items) {
+              const total = items.reduce((s, i) => s + i.parsed.y, 0);
+              return [` Итог: ${fmtFull(total)}`];
+            },
+          },
+        },
+      },
+      scales: {
+        x: {
+          stacked: true,
+          ticks: { color: '#64748b', font: { size: 11 } },
+          grid: { color: '#1e293b' },
+          title: { display: true, text: 'Год', color: '#64748b', font: { size: 11 } },
+        },
+        y: {
+          stacked: true,
+          ticks: {
+            color: '#64748b',
+            font: { size: 11 },
+            callback(v) { return fmt(v); },
+          },
+          grid: { color: '#334155' },
+        },
+      },
+    },
+  });
+
+  /* ---- Calculate ---- */
   function calculate() {
-    const initial = parseFloat(document.getElementById('initial').value) || 0;
-    const monthly = parseFloat(document.getElementById('monthly').value) || 0;
-    const annualRate = parseFloat(document.getElementById('rate').value) || 0;
-    const years = parseInt(document.getElementById('years').value) || 1;
-    const freq = parseInt(document.getElementById('freq').value);
+    const initial    = parseFloat(document.getElementById('initial').value) || 0;
+    const monthly    = parseFloat(document.getElementById('monthly').value) || 0;
+    const annualRate = parseFloat(document.getElementById('rate').value)    || 0;
+    const years      = parseInt(document.getElementById('years').value)     || 1;
+    const freq       = parseInt(document.getElementById('freq').value);
 
-    const ratePerPeriod = annualRate / 100 / freq;
-    const totalPeriods = years * freq;
+    const ratePerPeriod  = annualRate / 100 / freq;
     const monthsPerPeriod = 12 / freq;
 
-    // Build year-by-year breakdown
     let balance = initial;
-    const rows = [];
+    const rows  = [];
 
     for (let y = 1; y <= years; y++) {
-      const periodsThisYear = freq;
-      for (let p = 0; p < periodsThisYear; p++) {
+      for (let p = 0; p < freq; p++) {
         balance += monthly * monthsPerPeriod;
         balance *= (1 + ratePerPeriod);
       }
@@ -334,65 +469,60 @@
       rows.push({ year: y, contributed: totalContributed, interest, balance });
     }
 
-    const finalBalance = balance;
+    const finalBalance    = balance;
     const totalContributed = initial + monthly * 12 * years;
-    const totalInterest = finalBalance - totalContributed;
-    const interestPct = totalContributed > 0
+    const totalInterest   = finalBalance - totalContributed;
+    const interestPct     = totalContributed > 0
       ? ((totalInterest / totalContributed) * 100).toFixed(1)
       : '0.0';
 
-    const contribWidth = Math.round((totalContributed / finalBalance) * 100);
-    const interestWidth = 100 - contribWidth;
+    const cw = Math.round((totalContributed / finalBalance) * 100);
+    const iw = 100 - cw;
 
-    // Render results
-    document.getElementById('resultsContent').innerHTML = `
-      <div class="results-grid">
-        <div class="stat">
-          <div class="label">Итоговый капитал</div>
-          <div class="value purple">${fmt(finalBalance)}</div>
-        </div>
-        <div class="stat">
-          <div class="label">Всего внесено</div>
-          <div class="value blue">${fmt(totalContributed)}</div>
-        </div>
-        <div class="stat">
-          <div class="label">Доход от инвестиций</div>
-          <div class="value green">${fmt(totalInterest)}</div>
-        </div>
-        <div class="stat">
-          <div class="label">Доходность на вложения</div>
-          <div class="value green">+${interestPct}%</div>
-        </div>
-      </div>
+    /* Stats */
+    document.getElementById('sFinal').textContent   = fmt(finalBalance);
+    document.getElementById('sContrib').textContent = fmt(totalContributed);
+    document.getElementById('sIncome').textContent  = fmt(totalInterest);
+    document.getElementById('sPct').textContent     = '+' + interestPct + '%';
 
-      <div style="margin-bottom:6px; font-size:0.8rem; color:#64748b">Структура капитала</div>
-      <div class="bar-wrap" style="height:14px">
-        <div style="display:flex; height:100%">
-          <div class="bar-fill bar-contributions" style="width:${contribWidth}%"></div>
-          <div class="bar-fill bar-interest" style="width:${interestWidth}%; border-radius: 0 6px 6px 0"></div>
-        </div>
-      </div>
-      <div class="legend">
-        <span class="c">Взносы — ${contribWidth}%</span>
-        <span class="i">Доход — ${interestWidth}%</span>
-      </div>
-    `;
+    document.getElementById('barC').style.width = cw + '%';
+    document.getElementById('barI').style.width = iw + '%';
+    document.getElementById('legC').textContent = `Взносы — ${cw}%`;
+    document.getElementById('legI').textContent = `Доход — ${iw}%`;
 
-    // Render table
-    const tbody = document.getElementById('tableBody');
-    tbody.innerHTML = rows.map(r => `
+    /* Chart */
+    // For readability cap labels at 20 years by showing every Nth year
+    const step = years > 30 ? 5 : years > 20 ? 2 : 1;
+    const filtered = rows.filter(r => r.year % step === 0 || r.year === years);
+
+    chart.data.labels = filtered.map(r => r.year);
+    chart.data.datasets[0].data = filtered.map(r => r.contributed);
+    chart.data.datasets[1].data = filtered.map(r => r.interest);
+    chart.update();
+
+    /* Table */
+    document.getElementById('tableBody').innerHTML = rows.map(r => `
       <tr>
         <td>${r.year}</td>
-        <td class="blue">${fmt(r.contributed)}</td>
-        <td class="green">${fmt(r.interest)}</td>
-        <td><strong>${fmt(r.balance)}</strong></td>
+        <td class="blue">${fmtFull(r.contributed)}</td>
+        <td class="green">${fmtFull(r.interest)}</td>
+        <td><strong>${fmtFull(r.balance)}</strong></td>
       </tr>
     `).join('');
-
-    document.getElementById('tableCard').style.display = '';
   }
 
-  // Auto-calculate on load
+  /* ---- Tabs ---- */
+  document.querySelectorAll('.tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      if (btn.dataset.tab === 'chart') chart.resize();
+    });
+  });
+
+  /* ---- Init ---- */
   calculate();
 </script>
 
