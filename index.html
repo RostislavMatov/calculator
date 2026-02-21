@@ -8,12 +8,92 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    /* ---- Theme variables ---- */
+    :root {
+      --bg-page:    #0f172a;
+      --bg-card:    #1e293b;
+      --bg-input:   #0f172a;
+      --bg-stat:    #0f172a;
+      --bg-bar:     #0f172a;
+      --row-hover:  #1e293b55;
+
+      --border-card:  #334155;
+      --border-input: #334155;
+      --border-stat:  #334155;
+
+      --text-heading:  #f8fafc;
+      --text-body:     #e2e8f0;
+      --text-label:    #94a3b8;
+      --text-muted:    #64748b;
+      --text-value:    #f1f5f9;
+      --text-td:       #cbd5e1;
+      --text-td-first: #94a3b8;
+
+      --btn-bg:           #334155;
+      --btn-border:       #475569;
+      --btn-color:        #f1f5f9;
+      --btn-hover-bg:     #475569;
+      --btn-hover-border: #64748b;
+
+      --tab-active-bg:     #334155;
+      --tab-active-color:  #f1f5f9;
+      --tab-active-border: #475569;
+      --tab-inactive:      #64748b;
+
+      --table-header-color:  #64748b;
+      --table-header-border: #334155;
+      --table-row-border:    #1e293b;
+
+      --scrollbar-track: #0f172a;
+      --scrollbar-thumb: #334155;
+    }
+
+    body[data-theme="light"] {
+      --bg-page:    #f8fafc;
+      --bg-card:    #ffffff;
+      --bg-input:   #f8fafc;
+      --bg-stat:    #f8fafc;
+      --bg-bar:     #f1f5f9;
+      --row-hover:  #e2e8f055;
+
+      --border-card:  #e2e8f0;
+      --border-input: #e2e8f0;
+      --border-stat:  #e2e8f0;
+
+      --text-heading:  #0f172a;
+      --text-body:     #1e293b;
+      --text-label:    #64748b;
+      --text-muted:    #94a3b8;
+      --text-value:    #0f172a;
+      --text-td:       #475569;
+      --text-td-first: #64748b;
+
+      --btn-bg:           #e2e8f0;
+      --btn-border:       #cbd5e1;
+      --btn-color:        #0f172a;
+      --btn-hover-bg:     #cbd5e1;
+      --btn-hover-border: #94a3b8;
+
+      --tab-active-bg:     #e2e8f0;
+      --tab-active-color:  #0f172a;
+      --tab-active-border: #cbd5e1;
+      --tab-inactive:      #94a3b8;
+
+      --table-header-color:  #94a3b8;
+      --table-header-border: #e2e8f0;
+      --table-row-border:    #f1f5f9;
+
+      --scrollbar-track: #f1f5f9;
+      --scrollbar-thumb: #cbd5e1;
+    }
+
     body {
       font-family: 'Segoe UI', system-ui, sans-serif;
-      background: #0f172a;
-      color: #e2e8f0;
+      background: var(--bg-page);
+      color: var(--text-body);
       min-height: 100vh;
       padding: 32px 16px;
+      transition: background 0.2s, color 0.2s;
     }
 
     .page-header {
@@ -28,28 +108,33 @@
     h1 {
       font-size: 1.75rem;
       font-weight: 700;
-      color: #f8fafc;
+      color: var(--text-heading);
       letter-spacing: -0.5px;
     }
 
-    .lang-btn {
+    .header-btns {
       position: absolute;
       right: 0;
-      background: #334155;
-      border: 1px solid #475569;
+      display: flex;
+      gap: 8px;
+    }
+
+    .lang-btn, .theme-btn {
+      background: var(--btn-bg);
+      border: 1px solid var(--btn-border);
       border-radius: 8px;
-      color: #f1f5f9;
+      color: var(--btn-color);
       font-size: 0.85rem;
       font-weight: 600;
       padding: 6px 14px;
       cursor: pointer;
-      transition: background 0.15s, border-color 0.15s;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
       letter-spacing: 0.04em;
     }
 
-    .lang-btn:hover {
-      background: #475569;
-      border-color: #64748b;
+    .lang-btn:hover, .theme-btn:hover {
+      background: var(--btn-hover-bg);
+      border-color: var(--btn-hover-border);
     }
 
     .layout {
@@ -63,20 +148,21 @@
 
     @media (max-width: 780px) {
       .layout { grid-template-columns: 1fr; }
-      .lang-btn { position: static; margin-left: 16px; }
+      .header-btns { position: static; margin-left: 16px; }
     }
 
     .card {
-      background: #1e293b;
-      border: 1px solid #334155;
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
       border-radius: 16px;
       padding: 24px;
+      transition: background 0.2s, border-color 0.2s;
     }
 
     .card h2 {
       font-size: 0.8rem;
       font-weight: 600;
-      color: #64748b;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.06em;
       margin-bottom: 20px;
@@ -88,20 +174,20 @@
     label {
       display: block;
       font-size: 0.82rem;
-      color: #94a3b8;
+      color: var(--text-label);
       margin-bottom: 6px;
     }
 
     input[type="number"], select {
       width: 100%;
-      background: #0f172a;
-      border: 1px solid #334155;
+      background: var(--bg-input);
+      border: 1px solid var(--border-input);
       border-radius: 8px;
-      color: #f1f5f9;
+      color: var(--text-value);
       font-size: 1rem;
       padding: 10px 14px;
       outline: none;
-      transition: border-color 0.15s;
+      transition: border-color 0.15s, background 0.2s, color 0.2s;
       appearance: none;
     }
 
@@ -137,22 +223,23 @@
     }
 
     .stat {
-      background: #0f172a;
-      border: 1px solid #334155;
+      background: var(--bg-stat);
+      border: 1px solid var(--border-stat);
       border-radius: 10px;
       padding: 14px 16px;
+      transition: background 0.2s, border-color 0.2s;
     }
 
     .stat .label {
       font-size: 0.75rem;
-      color: #64748b;
+      color: var(--text-muted);
       margin-bottom: 5px;
     }
 
     .stat .value {
       font-size: 1.2rem;
       font-weight: 700;
-      color: #f1f5f9;
+      color: var(--text-value);
     }
 
     .stat .value.green  { color: #34d399; }
@@ -164,7 +251,7 @@
 
     .bar-label {
       font-size: 0.75rem;
-      color: #64748b;
+      color: var(--text-muted);
       margin-bottom: 6px;
     }
 
@@ -173,7 +260,8 @@
       height: 12px;
       border-radius: 6px;
       overflow: hidden;
-      background: #0f172a;
+      background: var(--bg-bar);
+      transition: background 0.2s;
     }
 
     .bar-c { background: #60a5fa; height: 100%; transition: width 0.4s ease; }
@@ -184,7 +272,7 @@
       gap: 16px;
       margin-top: 8px;
       font-size: 0.78rem;
-      color: #94a3b8;
+      color: var(--text-label);
     }
 
     .legend span::before {
@@ -219,15 +307,15 @@
       font-weight: 600;
       cursor: pointer;
       background: transparent;
-      color: #64748b;
+      color: var(--tab-inactive);
       border: 1px solid transparent;
       transition: all 0.15s;
     }
 
     .tab.active {
-      background: #334155;
-      color: #f1f5f9;
-      border-color: #475569;
+      background: var(--tab-active-bg);
+      color: var(--tab-active-color);
+      border-color: var(--tab-active-border);
     }
 
     .tab-panel { display: none; }
@@ -238,31 +326,34 @@
 
     thead th {
       text-align: left;
-      color: #64748b;
+      color: var(--table-header-color);
       font-weight: 600;
       padding: 8px 12px;
-      border-bottom: 1px solid #334155;
+      border-bottom: 1px solid var(--table-header-border);
     }
 
-    tbody tr { border-bottom: 1px solid #1e293b; }
-    tbody tr:hover { background: #1e293b55; }
+    tbody tr { border-bottom: 1px solid var(--table-row-border); }
+    tbody tr:hover { background: var(--row-hover); }
 
-    tbody td { padding: 8px 12px; color: #cbd5e1; }
-    tbody td:first-child { color: #94a3b8; }
+    tbody td { padding: 8px 12px; color: var(--text-td); }
+    tbody td:first-child { color: var(--text-td-first); }
     tbody td.green { color: #34d399; }
     tbody td.blue  { color: #60a5fa; }
 
     .table-scroll { max-height: 280px; overflow-y: auto; }
     .table-scroll::-webkit-scrollbar { width: 6px; }
-    .table-scroll::-webkit-scrollbar-track { background: #0f172a; border-radius: 3px; }
-    .table-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    .table-scroll::-webkit-scrollbar-track { background: var(--scrollbar-track); border-radius: 3px; }
+    .table-scroll::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
   </style>
 </head>
 <body>
 
 <div class="page-header">
   <h1 data-i18n="title">Инвестиционный калькулятор</h1>
-  <button class="lang-btn" id="langBtn" onclick="toggleLang()">EN</button>
+  <div class="header-btns">
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">&#9788;</button>
+    <button class="lang-btn" id="langBtn" onclick="toggleLang()">EN</button>
+  </div>
 </div>
 
 <div class="layout">
@@ -579,6 +670,66 @@
     },
   });
 
+  /* ---- Theme ---- */
+  const chartThemes = {
+    dark: {
+      legendColor:   '#94a3b8',
+      tooltipBg:     '#1e293b',
+      tooltipBorder: '#334155',
+      tooltipTitle:  '#f1f5f9',
+      tooltipBody:   '#94a3b8',
+      xTickColor:    '#64748b',
+      xGridColor:    '#1e293b',
+      xTitleColor:   '#64748b',
+      yTickColor:    '#64748b',
+      yGridColor:    '#334155',
+    },
+    light: {
+      legendColor:   '#64748b',
+      tooltipBg:     '#ffffff',
+      tooltipBorder: '#e2e8f0',
+      tooltipTitle:  '#0f172a',
+      tooltipBody:   '#64748b',
+      xTickColor:    '#94a3b8',
+      xGridColor:    '#f1f5f9',
+      xTitleColor:   '#94a3b8',
+      yTickColor:    '#94a3b8',
+      yGridColor:    '#e2e8f0',
+    },
+  };
+
+  let theme = localStorage.getItem('theme') || 'dark';
+
+  function applyTheme() {
+    if (theme === 'light') {
+      document.body.setAttribute('data-theme', 'light');
+      document.getElementById('themeBtn').textContent = '\u263D'; // crescent moon
+    } else {
+      document.body.removeAttribute('data-theme');
+      document.getElementById('themeBtn').textContent = '\u2600'; // sun
+    }
+
+    const c = chartThemes[theme];
+    chart.options.plugins.legend.labels.color = c.legendColor;
+    chart.options.plugins.tooltip.backgroundColor = c.tooltipBg;
+    chart.options.plugins.tooltip.borderColor = c.tooltipBorder;
+    chart.options.plugins.tooltip.titleColor = c.tooltipTitle;
+    chart.options.plugins.tooltip.bodyColor = c.tooltipBody;
+    chart.options.scales.x.ticks.color = c.xTickColor;
+    chart.options.scales.x.grid.color = c.xGridColor;
+    chart.options.scales.x.title.color = c.xTitleColor;
+    chart.options.scales.y.ticks.color = c.yTickColor;
+    chart.options.scales.y.grid.color = c.yGridColor;
+    chart.update('none');
+
+    localStorage.setItem('theme', theme);
+  }
+
+  function toggleTheme() {
+    theme = theme === 'dark' ? 'light' : 'dark';
+    applyTheme();
+  }
+
   /* ---- Calculate ---- */
   function calculate() {
     const t = i18n[lang];
@@ -659,6 +810,7 @@
 
   /* ---- Init ---- */
   calculate();
+  applyTheme();
 </script>
 
 </body>
