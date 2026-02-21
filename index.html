@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Инвестиционный калькулятор</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 32px 16px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 32px;
+      color: #f8fafc;
+      letter-spacing: -0.5px;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 680px) {
+      .container { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 20px;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-bottom: 6px;
+    }
+
+    input[type="number"], select {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #f1f5f9;
+      font-size: 1rem;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color 0.15s;
+      appearance: none;
+    }
+
+    input[type="number"]:focus, select:focus {
+      border-color: #6366f1;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: #6366f1;
+      margin-top: 4px;
+    }
+
+    .range-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .range-row input[type="number"] {
+      width: 90px;
+      flex-shrink: 0;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #6366f1;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    button:hover { background: #4f46e5; }
+    button:active { transform: scale(0.98); }
+
+    /* Results */
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+
+    .stat .label {
+      font-size: 0.78rem;
+      color: #64748b;
+      margin-bottom: 4px;
+    }
+
+    .stat .value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #f1f5f9;
+    }
+
+    .stat .value.green { color: #34d399; }
+    .stat .value.blue  { color: #60a5fa; }
+    .stat .value.purple{ color: #a78bfa; }
+
+    /* Progress bar */
+    .bar-wrap {
+      background: #0f172a;
+      border-radius: 6px;
+      height: 10px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 0.4s ease;
+    }
+
+    .bar-contributions { background: #60a5fa; }
+    .bar-interest      { background: #34d399; }
+
+    .legend {
+      display: flex;
+      gap: 16px;
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
+
+    .legend span::before {
+      content: '';
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      margin-right: 5px;
+      vertical-align: middle;
+    }
+
+    .legend .c::before { background: #60a5fa; }
+    .legend .i::before { background: #34d399; }
+
+    /* Table */
+    .table-wrap {
+      grid-column: 1 / -1;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    thead th {
+      text-align: left;
+      color: #64748b;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-bottom: 1px solid #334155;
+    }
+
+    tbody tr { border-bottom: 1px solid #1e293b; }
+    tbody tr:hover { background: #1e293b; }
+
+    tbody td {
+      padding: 8px 12px;
+      color: #cbd5e1;
+    }
+
+    tbody td:first-child { color: #94a3b8; }
+    tbody td.green { color: #34d399; }
+    tbody td.blue  { color: #60a5fa; }
+
+    .empty-msg {
+      text-align: center;
+      color: #475569;
+      padding: 32px;
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Инвестиционный калькулятор</h1>
+
+<div class="container">
+
+  <!-- INPUTS -->
+  <div class="card">
+    <h2>Параметры</h2>
+
+    <div class="field">
+      <label>Начальная сумма (₽)</label>
+      <input type="number" id="initial" value="100000" min="0" step="1000" />
+    </div>
+
+    <div class="field">
+      <label>Ежемесячное пополнение (₽)</label>
+      <input type="number" id="monthly" value="10000" min="0" step="500" />
+    </div>
+
+    <div class="field">
+      <label>Годовая доходность (%)</label>
+      <div class="range-row">
+        <input type="range" id="rateRange" min="0" max="50" step="0.5" value="12" oninput="syncRate(this)" />
+        <input type="number" id="rate" value="12" min="0" max="200" step="0.5" oninput="syncRateInput(this)" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Срок инвестирования (лет)</label>
+      <div class="range-row">
+        <input type="range" id="yearsRange" min="1" max="50" step="1" value="10" oninput="syncYears(this)" />
+        <input type="number" id="years" value="10" min="1" max="100" step="1" oninput="syncYearsInput(this)" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Капитализация</label>
+      <select id="freq">
+        <option value="12">Ежемесячно</option>
+        <option value="4">Ежеквартально</option>
+        <option value="2">Раз в полгода</option>
+        <option value="1">Ежегодно</option>
+      </select>
+    </div>
+
+    <button onclick="calculate()">Рассчитать</button>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="card" id="resultsCard">
+    <h2>Результат</h2>
+    <div id="resultsContent">
+      <p class="empty-msg">Заполните параметры и нажмите «Рассчитать»</p>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="card table-wrap" id="tableCard" style="display:none">
+    <h2>По годам</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Год</th>
+          <th>Взносы</th>
+          <th>Доход</th>
+          <th>Итог</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+  function fmt(n) {
+    return n.toLocaleString('ru-RU', { maximumFractionDigits: 0 }) + ' ₽';
+  }
+
+  function syncRate(el)      { document.getElementById('rate').value = el.value; }
+  function syncRateInput(el) { document.getElementById('rateRange').value = Math.min(el.value, 50); }
+  function syncYears(el)      { document.getElementById('years').value = el.value; }
+  function syncYearsInput(el) { document.getElementById('yearsRange').value = Math.min(el.value, 50); }
+
+  function calculate() {
+    const initial = parseFloat(document.getElementById('initial').value) || 0;
+    const monthly = parseFloat(document.getElementById('monthly').value) || 0;
+    const annualRate = parseFloat(document.getElementById('rate').value) || 0;
+    const years = parseInt(document.getElementById('years').value) || 1;
+    const freq = parseInt(document.getElementById('freq').value);
+
+    const ratePerPeriod = annualRate / 100 / freq;
+    const totalPeriods = years * freq;
+    const monthsPerPeriod = 12 / freq;
+
+    // Build year-by-year breakdown
+    let balance = initial;
+    const rows = [];
+
+    for (let y = 1; y <= years; y++) {
+      const periodsThisYear = freq;
+      for (let p = 0; p < periodsThisYear; p++) {
+        balance += monthly * monthsPerPeriod;
+        balance *= (1 + ratePerPeriod);
+      }
+      const totalContributed = initial + monthly * 12 * y;
+      const interest = balance - totalContributed;
+      rows.push({ year: y, contributed: totalContributed, interest, balance });
+    }
+
+    const finalBalance = balance;
+    const totalContributed = initial + monthly * 12 * years;
+    const totalInterest = finalBalance - totalContributed;
+    const interestPct = totalContributed > 0
+      ? ((totalInterest / totalContributed) * 100).toFixed(1)
+      : '0.0';
+
+    const contribWidth = Math.round((totalContributed / finalBalance) * 100);
+    const interestWidth = 100 - contribWidth;
+
+    // Render results
+    document.getElementById('resultsContent').innerHTML = `
+      <div class="results-grid">
+        <div class="stat">
+          <div class="label">Итоговый капитал</div>
+          <div class="value purple">${fmt(finalBalance)}</div>
+        </div>
+        <div class="stat">
+          <div class="label">Всего внесено</div>
+          <div class="value blue">${fmt(totalContributed)}</div>
+        </div>
+        <div class="stat">
+          <div class="label">Доход от инвестиций</div>
+          <div class="value green">${fmt(totalInterest)}</div>
+        </div>
+        <div class="stat">
+          <div class="label">Доходность на вложения</div>
+          <div class="value green">+${interestPct}%</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:6px; font-size:0.8rem; color:#64748b">Структура капитала</div>
+      <div class="bar-wrap" style="height:14px">
+        <div style="display:flex; height:100%">
+          <div class="bar-fill bar-contributions" style="width:${contribWidth}%"></div>
+          <div class="bar-fill bar-interest" style="width:${interestWidth}%; border-radius: 0 6px 6px 0"></div>
+        </div>
+      </div>
+      <div class="legend">
+        <span class="c">Взносы — ${contribWidth}%</span>
+        <span class="i">Доход — ${interestWidth}%</span>
+      </div>
+    `;
+
+    // Render table
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = rows.map(r => `
+      <tr>
+        <td>${r.year}</td>
+        <td class="blue">${fmt(r.contributed)}</td>
+        <td class="green">${fmt(r.interest)}</td>
+        <td><strong>${fmt(r.balance)}</strong></td>
+      </tr>
+    `).join('');
+
+    document.getElementById('tableCard').style.display = '';
+  }
+
+  // Auto-calculate on load
+  calculate();
+</script>
+
+</body>
+</html>
